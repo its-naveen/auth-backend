@@ -36,3 +36,20 @@ export async function login(req, res) {
     res.status(404).json({ message: 'user not found' });
   }
 }
+
+export async function authorization(req, res, next) {
+  const token = req.headers['authorization'];
+
+  if (!token) {
+    return res.status(403).json({ message: 'unauthorized' });
+  }
+
+  jwt.verify(token.split(' ')[1], secretKey, function(err, user) {
+    if (err) {
+      return res.status(403).json({ message: 'invalid token' });
+    } else {
+      req.user = user;
+      next();
+    }
+  });
+}
