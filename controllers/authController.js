@@ -8,11 +8,14 @@ const env = dotenv.config();
 const secretKey = get(env, 'parsed.SECRET_KEY');
 
 export async function signup(req, res) {
-  const { email } = req.body;
+  const { email, username } = req.body;
+  if (email === '' || username === '') {
+    return res.status(409).json({ message: 'account creation failed' });
+  }
   const existingUsers = await readData();
   const hasUser = existingUsers.some(user => user.email === email);
   if (!hasUser) {
-    const newData = [...existingUsers, { email: email }];
+    const newData = [...existingUsers, { email: email, username: username }];
     await writeData(newData);
     res.status(201).json({ message: 'account creation successful' });
   } else {
@@ -31,7 +34,7 @@ export async function login(req, res) {
       email
     };
     const token = jwt.sign(payload, secretKey, { expiresIn: '1h' });
-    res.status(200).json({ message: 'login success', token });
+    res.status(200).json({ message: 'login successful', token });
   } else {
     res.status(404).json({ message: 'user not found' });
   }
